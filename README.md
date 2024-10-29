@@ -152,10 +152,11 @@ In the example, [Boot Options] and [Network Settings] are subcategories of [Syst
 
 ## Usage
 1. Ensure `ydotoold` is running (`systemctl --user start ydotool`)
-2. Run `hx-jump` from your terminal
-3. Select a category from the wofi menu
-4. The script will automatically jump to the selected section in your configuration file
-5. Tip: if you are using Helix, I recommend adding this to your config file
+2. Run `hx-jump` from your terminal to see if it works
+3. implement a way to run it from you editor
+4. Select a category from the wofi menu
+5. The script will automatically jump to the selected section in your configuration file
+6. Tip: if you are using Helix, I recommend adding something like this to your config file
 
 ![image](https://github.com/user-attachments/assets/32ff559d-56fa-4eeb-ad4c-1484e9550eed)
 
