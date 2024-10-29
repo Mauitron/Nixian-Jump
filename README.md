@@ -73,7 +73,7 @@ environment.systemPackages = with pkgs; [
              --width 400 \
              --height 500 \
              --cache-file /dev/null \
-             --style /etc/xdg/wofi/minimize-style.css \
+   #         --style /etc/xdg/wofi/minimize-style.css \ 
              --hide-scroll \
              --insensitive \
              --normal-window
