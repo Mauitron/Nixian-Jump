@@ -25,7 +25,6 @@ Add the following to your `configuration.nix`:
 
 ```nix
 environment.systemPackages = with pkgs; [
-  bash
   wofi
   ydotool
 ];
