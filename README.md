@@ -9,7 +9,7 @@ but should work with any other editor that can use line number navigation.
 
 ## Requirements
 
-### System Componentshttps://github.com/Mauitron/Nixian-Jump.git
+### System Components
 - **NixOS Configuration**: Configuration file at `/etc/nixos/configuration.nix`
 - **Shell Tools**:
   - `bash` (scripting)
