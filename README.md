@@ -9,7 +9,7 @@ but should work with any other editor that can use line number navigation.
 
 ## Requirements
 
-### System Components
+### System Componentshttps://github.com/Mauitron/Nixian-Jump.git
 - **NixOS Configuration**: Configuration file at `/etc/nixos/configuration.nix`
 - **Shell Tools**:
   - `bash` (scripting)
@@ -125,12 +125,12 @@ The script uses a special syntax in your configuration file to mark sections:
 
 ```
 - `#` marks the start of a category
-- `1` is the category number
+- `1` the category number
 - Text inside `[]` is the category name
 
 #### Subcategories
 ```
-#2>[Subcategory Name]
+#1>[Subcategory Name]
 
 ```
 - Similar to main categories but includes `>`
