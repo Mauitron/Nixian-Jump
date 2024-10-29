@@ -1,4 +1,4 @@
-# Nixian-jump Documentation
+# Nixian-Jump Documentation
 ![image](https://github.com/user-attachments/assets/1c486def-7816-4242-9205-44467b6ab6fc)
 If you like this tool, why not [Buy Me a Coffee](https://buymeacoffee.com/charon0)?
 ## Overview
