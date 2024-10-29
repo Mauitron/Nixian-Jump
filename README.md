@@ -35,7 +35,7 @@ Run `sudo nixos-rebuild switch` after making changes.
 ## Implementation Guide
 
 ### 1. Script Installation
-Add this code to your NixOS configuration under the programs or environment section:
+Add this code to your NixOS configuration under the environment.systemPackages section:
 
 ```nix
 environment.systemPackages = with pkgs; [
