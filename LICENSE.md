@@ -45,8 +45,7 @@ both parties.
 - Report bugs and suggest improvements
 - Share your experience with other NixOS users
 - Contribute to the codebase
-- If Nixian-jump brings you value, Consider [buying Me a Coffee](https://
-  buymeacoffee.com/charon0)
+- If Nixian-jump brings you value, Consider [Buying Me a Coffee](https://buymeacoffee.com/charon0)
 
 ### Attribution
 
