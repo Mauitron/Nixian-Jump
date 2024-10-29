@@ -106,12 +106,14 @@ sudo nixos-rebuild switch
 
 #2. Configure ydotool daemon service:
 ```nix
-systemd.user.services.ydotool = {
-  enable = true;
-  serviceConfig = {
-    ExecStart = "${pkgs.ydotool}/bin/ydotoold";
+ systemd.services.ydotool = {
+    description = "ydotool daemon";
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      ExecStart = "${pkgs.ydotool}/bin/ydotoold";
+      Restart = "always";
+    };
   };
-};
 ```
 
 ## Syntax Explanation
