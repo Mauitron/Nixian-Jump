@@ -155,7 +155,8 @@ In the example, [Boot Options] and [Network Settings] are subcategories of [Syst
 3. Select a category from the wofi menu
 4. The script will automatically jump to the selected section in your configuration file
 5. Tip: if you are using Helix, I recommend adding this to your config file
-   ![image](https://github.com/user-attachments/assets/32ff559d-56fa-4eeb-ad4c-1484e9550eed)
+
+![image](https://github.com/user-attachments/assets/32ff559d-56fa-4eeb-ad4c-1484e9550eed)
 
 
 The script combines these numbered sections with wofi's menu interface to create a hierarchical navigation system for your NixOS configuration.
