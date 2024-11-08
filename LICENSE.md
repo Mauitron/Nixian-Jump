@@ -75,7 +75,7 @@ I'd love to hear from you about:
 - Your ideas and feedback
 - Just saying hello!
 
-Email: Stygian.Ferryman69@gmail.com
+Email: Maui_The_Magnificent@proton.me
 
 ## Final Thoughts
 
