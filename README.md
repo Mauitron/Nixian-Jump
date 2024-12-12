@@ -1,48 +1,60 @@
-# Nixian-Jump Documentation
-![image](https://github.com/user-attachments/assets/1c486def-7816-4242-9205-44467b6ab6fc)
-If you like this tool, why not [Buy Me a Coffee](https://buymeacoffee.com/charon0)?
+# Nixian-Jump Documentation!
+![output_optimized](https://github.com/user-attachments/assets/90d34450-7416-4174-8a1d-d575c9b5de32)
+
+
+
+If you like this tool, why not [Buy Me a Coffee](https://buymeacoffee.com/charon0)☕
 ## Overview
-`Nixian-jump` is a navigation tool for NixOS configuration files that provides
-a hierarchical menu interface for quickly jumping to different sections of your
-configuration. It was designed for the Helix editor (hence the 'hx' down below),
-but should work with any other editor that can use line number navigation.
+# Nixian Jump - NixOS Configuration Navigator
+
+Nixian Jump is a navigation tool for NixOS configuration files that provides a hierarchical menu interface for quickly jumping to different sections of your configuration. It works with any editor that supports line number navigation, with specific optimizations for Helix.
 
 ## Requirements
 
 ### System Components
-- **NixOS Configuration**: Configuration file at `/etc/nixos/configuration.nix`
-- **Shell Tools**:
-  - `bash` (scripting)
-  - `grep`, `sed`, `awk`, `column` (text parsing)
-- **Wayland Components**:
-  - `wofi` (menu interface)
-- **Input Simulation**:
-  - `ydotool` (keyboard input simulation)
-  - `ydotoold` (daemon service)
+- NixOS Configuration file at `/etc/nixos/configuration.nix`
+- Required packages:
+  - rofi (menu interface)
+  - ydotool (keyboard input simulation)
+  - ydotoold (daemon service)
 
-### Package Installation
-Add the following to your `configuration.nix`:
+## Installation Guide
+
+### 1. Add Required Packages
+
+Add these packages to your `configuration.nix`:
 
 ```nix
 environment.systemPackages = with pkgs; [
-  wofi
+  rofi-wayland  # Use rofi-wayland for Wayland compatibility
   ydotool
 ];
 ```
 
-Run `sudo nixos-rebuild switch` after making changes.
+### 2. Configure the ydotool Service
 
-## Implementation Guide
+Add this service configuration to your `configuration.nix`:
 
-### 1. Script Installation
-Add this code to your NixOS configuration under the environment.systemPackages section:
+```nix
+systemd.services.ydotool = {
+  description = "ydotool daemon";
+  wantedBy = [ "multi-user.target" ];
+  serviceConfig = {
+    ExecStart = "${pkgs.ydotool}/bin/ydotoold";
+    Restart = "always";
+  };
+};
+```
+
+### 3. Add the Nixian Jump Script
+
+Add this script configuration to your `configuration.nix`:
 
 ```nix
 environment.systemPackages = with pkgs; [
-  (pkgs.writeScriptBin "hx-jump" ''
-    #!/usr/bin/env bash
-
-    # Ensure ydotoold is running
+  (writeScriptBin "hx-jump" ''
+    #!/bin/sh
+    
     if ! pgrep -x "ydotoold" > /dev/null; then
       echo "ydotoold is not running. Starting it..."
       systemctl --user start ydotool
@@ -51,93 +63,162 @@ environment.systemPackages = with pkgs; [
 
     CONFIG_FILE="/etc/nixos/configuration.nix"
 
-    # Function to create menu items based on parent category
     show_menu() {
       local prompt_text="$1"
-
-      # First, get main categories
+      
       {
+        echo "# Main Sections"
         grep -n "^#[0-9]\+\[\(.*\)\]" "$CONFIG_FILE" | \
         sed 's/:#\([0-9]*\)\[\(.*\)\]/|\1|\2/' | \
         awk -F'|' '{printf "%s|%s\n", $1, $3}'
-
-        # Get subcategories (those with >)
+        
+        echo "# Sub Sections"
         grep -n "^#[0-9]\+>\[\(.*\)\]" "$CONFIG_FILE" | \
         sed 's/:#\([0-9]*\)>\[\(.*\)\]/|\1|    ┗━ \2/' | \
         awk -F'|' '{printf "%s|%s\n", $1, $3}'
-
+        
       } | sort -n | \
         column -t -s'|' | \
-        wofi --dmenu \
-             --prompt "$prompt_text" \
-             --width 400 \
-             --height 500 \
-             --cache-file /dev/null \
-   #         --style /etc/xdg/wofi/minimize-style.css \ 
-             --hide-scroll \
-             --insensitive \
-             --normal-window
+        rofi -dmenu \
+             -p "$prompt_text" \
+             -theme-str '
+                window {
+                    width: 800px;
+                    height: 600px;
+                    location: center;
+                    anchor: center;
+                    transparency: "real";
+                    background-color: #2E3440;
+                    border: 3px solid;
+                    border-color: #4C566A;
+                    border-radius: 12px;
+                }
+                mainbox {
+                    background-color: transparent;
+                    children: [inputbar, listview];
+                }
+                inputbar {
+                    padding: 0px;
+                    margin: 0px 0px 20px 0px;
+                    background-color: #3B4252;
+                    text-color: #ECEFF4;
+                    border-radius: 8px;
+                    border: 1px solid;
+                    border-color: #4C566A;
+                    children: [prompt, textbox-prompt-colon, entry];
+                }
+                prompt {
+                    enabled: true;
+                    padding: 12px;
+                    background-color: transparent;
+                    text-color: inherit;
+                }
+                textbox-prompt-colon {
+                    expand: false;
+                    str: "";
+                    padding: 12px;
+                    text-color: inherit;
+                }
+                entry {
+                    padding: 12px;
+                    background-color: transparent;
+                    text-color: inherit;
+                    placeholder: "Search sections...";
+                    placeholder-color: #4C566A;
+                }
+                listview {
+                    columns: 1;
+                    lines: 10;
+                    scrollbar: true;
+                    padding: 10px;
+                    background-color: transparent;
+                    border: 0px;
+                }
+                scrollbar {
+                    width: 4px;
+                    padding: 0;
+                    handle-width: 8px;
+                    border: 0;
+                    handle-color: #4C566A;
+                }
+                element {
+                    padding: 12px;
+                    background-color: transparent;
+                    text-color: #ECEFF4;
+                    border-radius: 8px;
+                }
+                element normal.normal {
+                    background-color: transparent;
+                    text-color: #ECEFF4;
+                }
+                element selected.normal {
+                    background-color: #3B4252;
+                    text-color: #88C0D0;
+                    border: 1px solid;
+                    border-color: #4C566A;
+                }
+                element-text {
+                    background-color: transparent;
+                    text-color: inherit;
+                    highlight: bold #88C0D0;
+                }
+             ' \
+             -matching fuzzy \
+             -i \
+             -no-custom \
+             -hover-select \
+             -me-select-entry "" \
+             -me-accept-entry "MousePrimary"
     }
 
-    # Show the hierarchical menu
-    selection=$(show_menu "Jump to section:")
+    if [ ! -r "$CONFIG_FILE" ]; then
+      echo "Error: Cannot read $CONFIG_FILE"
+      exit 1
+    fi
+
+    selection=$(show_menu "Jump to section")
 
     if [ -n "$selection" ]; then
-      # Extract the line number from the selection
       line_number=$(echo "$selection" | awk '{print $1}')
-
+      
       if [ -n "$line_number" ]; then
         ${pkgs.ydotool}/bin/ydotool type "$line_number"
-        ${pkgs.ydotool}/bin/ydotool type "G" #In ydotool,"U" is "G" for dvorak
+        ${pkgs.ydotool}/bin/ydotool type "G" # the navigation key in helix
       fi
     fi
   '')
 ];
 ```
 
-### 2. System Configuration
-After adding the script:
+### 4. Apply Changes
 
-#1. Rebuild your system:
+After adding all components, rebuild your system:
+
 ```bash
 sudo nixos-rebuild switch
 ```
 
-#2. Configure ydotool daemon service:
-```nix
- systemd.services.ydotool = {
-    description = "ydotool daemon";
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      ExecStart = "${pkgs.ydotool}/bin/ydotoold";
-      Restart = "always";
-    };
-  };
-```
+## Configuration File Syntax
 
-## Syntax Explanation
-
-The script uses a special syntax in your configuration file to mark sections:
+Nixian Jump uses a special syntax in your configuration file to mark sections:
 
 ### Main Categories
-```
+```nix
 #1[Category Name]
-
 ```
 - `#` marks the start of a category
-- `1` the category number
+- `1` is the category number
 - Text inside `[]` is the category name
 
-#### Subcategories
-```
+### Subcategories
+```nix
 #1>[Subcategory Name]
-
 ```
 - Similar to main categories but includes `>`
 - The `>` indicates this is a subcategory
-- Displayed with a tree branch (`┗━`) in the menu
+- Displayed with a tree branch (┗━) in the menu
 
-### Examples
+### Example Structure
 ```nix
 #1[System Configuration]
 # ... configuration items ...
@@ -148,17 +229,40 @@ The script uses a special syntax in your configuration file to mark sections:
 #1>[Network Settings]
 # ... network-related configuration ...
 ```
+
 In the example, [Boot Options] and [Network Settings] are subcategories of [System Configuration]
 
+## Editor Integration
+
+### Helix Integration
+
+If you are using Helix, add this to your Helix configuration (`config.toml`):
+
+```toml
+[keys.normal.space]
+u = [":sh hx-jump"]
+```
+
+This allows you to trigger Nixian Jump with `Space + u` in normal mode.
+
 ## Usage
-1. Ensure `ydotoold` is running (`systemctl --user start ydotool`)
-2. Run `hx-jump` from your terminal to see if it works
-3. implement a way to run it from you editor
-4. Select a category from the wofi menu
-5. The script will automatically jump to the selected section in your configuration file
-6. Tip: if you are using Helix, I recommend adding something like this to your config file
 
-![image](https://github.com/user-attachments/assets/32ff559d-56fa-4eeb-ad4c-1484e9550eed)
+1. Ensure `ydotoold` is running:
+   ```bash
+   systemctl --user start ydotool
+   ```
+2. Run `hx-jump` from your terminal or trigger it from your editor
+3. Use the rofi menu to select a section:
+   - Type to search (fuzzy-find enabled)
+   - Use arrow keys, tab or mouse to navigate the options
+   - Press Enter or click to select
+4. The script will automatically jump to the selected section in your configuration file
 
+## Features
 
-The script combines these numbered sections with wofi's menu interface to create a hierarchical navigation system for your NixOS configuration.
+- Hierarchical navigation system
+- Fuzzy search functionality
+- Beautiful Nord-themed interface
+- Mouse and keyboard navigation
+- Section categorization with visual hierarchy
+- Instant jumping to any config section
