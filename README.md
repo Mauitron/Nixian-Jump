@@ -1,13 +1,12 @@
 # Nixian-Jump Documentation!
 ![output_optimized](https://github.com/user-attachments/assets/90d34450-7416-4174-8a1d-d575c9b5de32)
 
-
-
 If you like this tool, why not [Buy Me a Coffee](https://buymeacoffee.com/charon0)☕
+
 ## Overview
 # Nixian Jump - NixOS Configuration Navigator
 
-Nixian Jump is a navigation tool for NixOS configuration files that provides a hierarchical menu interface for quickly jumping to different sections of your configuration. It works with any editor that supports line number navigation, with specific optimizations for Helix.
+Nixian Jump is a navigation tool for NixOS configuration files that provides a hierarchical menu interface for quickly jumping to different sections of your configuration. It works with any editor that supports line number navigation, it was designed for the Helix text editor originally.
 
 ## Requirements
 
@@ -20,31 +19,91 @@ Nixian Jump is a navigation tool for NixOS configuration files that provides a h
 
 ## Installation Guide
 
-### 1. Add Required Packages
+### 1. Essential Configuration
 
-Add these packages to your `configuration.nix`:
+Add these configurations to your `configuration.nix`:
 
 ```nix
+# Required packages
 environment.systemPackages = with pkgs; [
   rofi-wayland  # Use rofi-wayland for Wayland compatibility
   ydotool
 ];
+
+# Critical: Security wrapper for ydotool
+security.wrappers.ydotool = {
+  owner = "root";
+  group = "wheel";
+  capabilities = "cap_dac_override,cap_sys_admin+ep";
+  source = "${pkgs.ydotool}/bin/ydotool";
+};
+
+# Enable ydotool service
+services.ydotool = {
+  enable = true;
+};
+
+# Ensure your user is in the wheel group
+users.users.YOUR_USERNAME = {
+  extraGroups = [ "wheel" ];  # Add to existing groups
+};
 ```
 
-### 2. Configure the ydotool Service
+### 2. Configure Additional Services
 
-Add this service configuration to your `configuration.nix`:
+Add these configurations to your `configuration.nix`:
 
 ```nix
-systemd.services.ydotool = {
+# ydotool setup
+services.ydotool = {
+  enable = true;
+};
+
+# Add the user to the input group
+users.users.YOUR_USERNAME = {
+  extraGroups = [ "input" ];
+};
+
+# Add ydotool wrapper with necessary capabilities
+security.wrappers.ydotool = {
+  owner = "root";
+  group = "input";
+  capabilities = "cap_dac_override,cap_sys_admin+ep";
+  source = "${pkgs.ydotool}/bin/ydotool";
+};
+
+# Configure the service
+systemd.user.services.ydotool = {
   description = "ydotool daemon";
-  wantedBy = [ "multi-user.target" ];
+  wantedBy = [ "graphical-session.target" ];
   serviceConfig = {
     ExecStart = "${pkgs.ydotool}/bin/ydotoold";
     Restart = "always";
+    RuntimeDirectory = "ydotool";
+    RuntimeDirectoryMode = "0755";
+  };
+  environment = {
+    XDG_RUNTIME_DIR = "%t";
+    WAYLAND_DISPLAY = "wayland-1";
   };
 };
 ```
+
+After adding these configurations, you'll need to:
+
+1. Replace `YOUR_USERNAME` with your actual username
+2. Log out and log back in (to apply the group changes)
+3. Enable and start the ydotool service:
+   ```bash
+   systemctl --user enable ydotool
+   systemctl --user start ydotool
+   ```
+4. Verify the service is running:
+   ```bash
+   systemctl --user status ydotool
+   ```
+   
+The socket should now be properly created at `/run/user/YOUR_UID/.ydotool_socket`
 
 ### 3. Add the Nixian Jump Script
 
@@ -183,7 +242,9 @@ environment.systemPackages = with pkgs; [
       
       if [ -n "$line_number" ]; then
         ${pkgs.ydotool}/bin/ydotool type "$line_number"
-        ${pkgs.ydotool}/bin/ydotool type "G" # the navigation key in helix
+        sleep 0.1
+        ${pkgs.ydotool}/bin/ydotool type "g"
+        ${pkgs.ydotool}/bin/ydotool type "g"
       fi
     fi
   '')
@@ -229,14 +290,13 @@ Nixian Jump uses a special syntax in your configuration file to mark sections:
 #1>[Network Settings]
 # ... network-related configuration ...
 ```
-
 In the example, [Boot Options] and [Network Settings] are subcategories of [System Configuration]
 
 ## Editor Integration
 
 ### Helix Integration
 
-If you are using Helix, add this to your Helix configuration (`config.toml`):
+Add this to your Helix configuration (`config.toml`):
 
 ```toml
 [keys.normal.space]
@@ -254,7 +314,7 @@ This allows you to trigger Nixian Jump with `Space + u` in normal mode.
 2. Run `hx-jump` from your terminal or trigger it from your editor
 3. Use the rofi menu to select a section:
    - Type to search (fuzzy-find enabled)
-   - Use arrow keys, tab or mouse to navigate the options
+   - Use arrow keys or mouse to navigate
    - Press Enter or click to select
 4. The script will automatically jump to the selected section in your configuration file
 
