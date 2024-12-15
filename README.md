@@ -48,30 +48,10 @@ users.users.YOUR_USERNAME = {
   extraGroups = [ "wheel" ];  # Add to existing groups
 };
 ```
-
 ### 2. Configure Additional Services
 
 Add these configurations to your `configuration.nix`:
-
-```nix
-# ydotool setup
-services.ydotool = {
-  enable = true;
-};
-
-# Add the user to the input group
-users.users.YOUR_USERNAME = {
-  extraGroups = [ "input" ];
-};
-
-# Add ydotool wrapper with necessary capabilities
-security.wrappers.ydotool = {
-  owner = "root";
-  group = "input";
-  capabilities = "cap_dac_override,cap_sys_admin+ep";
-  source = "${pkgs.ydotool}/bin/ydotool";
-};
-
+```
 # Configure the service
 systemd.user.services.ydotool = {
   description = "ydotool daemon";
